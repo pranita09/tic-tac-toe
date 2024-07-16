@@ -1,2 +1,2 @@
 # tic-tac-toe
- Tic Tac toe game in vanilla JavaScript
+ Tic Tac Toe game in vanilla JavaScript
