@@ -110,4 +110,5 @@ module.exports = {
   showWinner,
   showDraw,
   checkWinner,
+  startTimer,
 };

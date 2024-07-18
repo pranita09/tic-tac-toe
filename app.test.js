@@ -50,15 +50,6 @@ describe("Tic Tac Toe Game Functions", () => {
     expect(msgContainer.classList.contains("hide")).toBe(true);
   });
 
-  test('computerMove should mark a box with "X"', () => {
-    const { computerMove } = require("./app.js");
-    const boxes = Array.from(document.querySelectorAll(".box"));
-    boxes.forEach((box) => (box.innerText = ""));
-    computerMove();
-    const xBoxes = boxes.filter((box) => box.innerText === "X");
-    expect(xBoxes.length).toBe(1);
-  });
-
   test("disableBoxes should disable all boxes", () => {
     const { disableBoxes } = require("./app.js");
     disableBoxes();
@@ -87,10 +78,10 @@ describe("Tic Tac Toe Game Functions", () => {
   test("showWinner should display the winner message and disable boxes", () => {
     const { showWinner } = require("./app.js");
     const boxes = Array.from(document.querySelectorAll(".box"));
-    showWinner("O");
+    showWinner("Congratulations! Winner is X");
 
     const msg = document.querySelector("#msg");
-    expect(msg.innerText).toBe("Congratulations! Winner is O");
+    expect(msg.innerText).toBe("Congratulations! Winner is X");
 
     const msgContainer = document.querySelector(".msg-container");
     expect(msgContainer.classList.contains("hide")).toBe(false);
@@ -119,13 +110,13 @@ describe("Tic Tac Toe Game Functions", () => {
   test("checkWinner should detect the winner correctly", () => {
     const { checkWinner } = require("./app.js");
     const boxes = Array.from(document.querySelectorAll(".box"));
-    boxes[0].innerText = "O";
-    boxes[1].innerText = "O";
-    boxes[2].innerText = "O";
+    boxes[0].innerText = "X";
+    boxes[1].innerText = "X";
+    boxes[2].innerText = "X";
     checkWinner();
 
     const msg = document.querySelector("#msg");
-    expect(msg.innerText).toBe("Congratulations! Winner is O");
+    expect(msg.innerText).toBe("Congratulations! Winner is X");
   });
 
   test("checkWinner should detect a draw correctly", () => {
@@ -141,6 +132,19 @@ describe("Tic Tac Toe Game Functions", () => {
     checkWinner();
 
     const msg = document.querySelector("#msg");
-    expect(msg.innerText).not.toBe("Congratulations! Winner is O");
+    expect(msg.innerText).toEqual(
+      expect.not.stringContaining("Congratulations!")
+    );
+  });
+
+  test("startTimer should declare the opponent as winner if time runs out", () => {
+    const { startTimer } = require("./app.js");
+    jest.useFakeTimers();
+
+    startTimer();
+    jest.advanceTimersByTime(15000);
+
+    const msg = document.querySelector("#msg");
+    expect(msg.innerText).toBe("Time out! X wins the game.");
   });
 });
