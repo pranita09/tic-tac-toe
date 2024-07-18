@@ -101,3 +101,13 @@ const checkWinner = () => {
 
 newGameBtn.addEventListener("click", restartGame);
 restartBtn.addEventListener("click", restartGame);
+
+module.exports = {
+  restartGame,
+  computerMove,
+  disableBoxes,
+  enableBoxes,
+  showWinner,
+  showDraw,
+  checkWinner,
+};
