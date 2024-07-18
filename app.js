@@ -1,12 +1,16 @@
 let boxes = document.querySelectorAll(".box");
-let restartBtn = document.querySelector("#restart-btn");
-let newGameBtn = document.querySelector("#new-btn");
+let startBtn = document.querySelector(".start-game");
+let restartBtn = document.querySelector(".restart-game");
+let newGameBtn = document.querySelector(".new-game");
 let msgContainer = document.querySelector(".msg-container");
 let msg = document.querySelector("#msg");
+let timerDisplay = document.querySelector("#seconds");
+let timerContainer = document.querySelector("#timer");
 
 let turnO = true; // playerO, playerX
 let btnClickCount = 0;
 let timer;
+let timeLeft = 15;
 
 const winPatterns = [
   [0, 1, 2],
@@ -19,35 +23,54 @@ const winPatterns = [
   [6, 7, 8],
 ];
 
-boxes.forEach((box) => {
-  box.addEventListener("click", () => {
-    if (turnO) {
-      // playerO
-      box.innerText = "O";
-      turnO = false;
-    } else {
-      // playerX
-      box.innerText = "X";
-      turnO = true;
-    }
-    box.disabled = true;
-    btnClickCount++;
-    checkWinner();
-    if (msgContainer.classList.contains("hide")) {
-      startTimer();
-    }
+const startGame = () => {
+  startBtn.classList.add("hide");
+  restartBtn.classList.remove("hide");
+  startTimer();
+  boxes.forEach((box) => {
+    box.addEventListener("click", () => {
+      if (turnO) {
+        // playerO
+        box.innerText = "O";
+        turnO = false;
+      } else {
+        // playerX
+        box.innerText = "X";
+        turnO = true;
+      }
+      box.disabled = true;
+      btnClickCount++;
+      checkWinner();
+      if (msgContainer.classList.contains("hide")) {
+        startTimer();
+      }
+    });
   });
-});
+};
 
 const startTimer = () => {
   clearTimeout(timer);
-  timer = setTimeout(() => {
-    const winner = turnO ? "X" : "O";
-    showWinner(`Time out! ${winner} wins the game.`);
-  }, 15000);
+  timeLeft = 15;
+  timerDisplay.innerText = timeLeft;
+  timerContainer.style.backgroundColor = "";
+  timer = setInterval(() => {
+    timeLeft--;
+    timerDisplay.innerText = timeLeft < 10 ? `0${timeLeft}` : timeLeft;
+    if (timeLeft <= 5) {
+      timerContainer.style.backgroundColor = "red";
+    } else {
+      timerContainer.style.backgroundColor = "";
+    }
+    if (timeLeft <= 0) {
+      clearInterval(timer);
+      const winner = turnO ? "X" : "O";
+      showWinner(`Time out! ${winner} wins the game.`);
+    }
+  }, 1000);
 };
 
 const restartGame = () => {
+  startTimer();
   turnO = true;
   btnClickCount = 0;
   enableBoxes();
@@ -100,8 +123,11 @@ const checkWinner = () => {
   }
 };
 
+restartBtn.classList.add("hide");
+
 newGameBtn.addEventListener("click", restartGame);
 restartBtn.addEventListener("click", restartGame);
+startBtn.addEventListener("click", startGame);
 
 module.exports = {
   restartGame,
