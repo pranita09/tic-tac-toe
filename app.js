@@ -4,8 +4,9 @@ let newGameBtn = document.querySelector("#new-btn");
 let msgContainer = document.querySelector(".msg-container");
 let msg = document.querySelector("#msg");
 
-let turnO = true; // playerO
+let turnO = true; // playerO, playerX
 let btnClickCount = 0;
+let timer;
 
 const winPatterns = [
   [0, 1, 2],
@@ -23,43 +24,43 @@ boxes.forEach((box) => {
     if (turnO) {
       // playerO
       box.innerText = "O";
-      box.disabled = true;
       turnO = false;
-      btnClickCount++;
-      checkWinner();
-      if (!turnO) {
-        // playerX
-        setTimeout(computerMove, 500);
-      }
+    } else {
+      // playerX
+      box.innerText = "X";
+      turnO = true;
+    }
+    box.disabled = true;
+    btnClickCount++;
+    checkWinner();
+    if (msgContainer.classList.contains("hide")) {
+      startTimer();
     }
   });
 });
+
+const startTimer = () => {
+  clearTimeout(timer);
+  timer = setTimeout(() => {
+    const winner = turnO ? "X" : "O";
+    showWinner(`Time out! ${winner} wins the game.`);
+  }, 15000);
+};
 
 const restartGame = () => {
   turnO = true;
   btnClickCount = 0;
   enableBoxes();
   msgContainer.classList.add("hide");
-};
-
-const computerMove = () => {
-  let availableBoxes = Array.from(boxes).filter((box) => box.innerText === "");
-  if (availableBoxes.length === 0) {
-    return;
-  }
-  let randomIndex = Math.floor(Math.random() * availableBoxes.length);
-  let box = availableBoxes[randomIndex];
-  box.innerText = "X";
-  box.disabled = true;
-  turnO = true;
-  btnClickCount++;
-  checkWinner();
+  clearTimeout(timer);
+  startTimer();
 };
 
 const disableBoxes = () => {
   for (box of boxes) {
     box.disabled = true;
   }
+  clearTimeout(timer);
 };
 
 const enableBoxes = () => {
@@ -70,7 +71,7 @@ const enableBoxes = () => {
 };
 
 const showWinner = (winner) => {
-  msg.innerText = `Congratulations! Winner is ${winner}`;
+  msg.innerText = winner;
   msgContainer.classList.remove("hide");
   disableBoxes();
 };
@@ -89,7 +90,7 @@ const checkWinner = () => {
 
     if (pos1Val !== "" && pos2Val !== "" && pos3Val !== "") {
       if (pos1Val === pos2Val && pos2Val === pos3Val) {
-        showWinner(pos1Val);
+        showWinner(`Congratulations! Winner is ${pos1Val}`);
         return;
       }
     }
@@ -104,7 +105,6 @@ restartBtn.addEventListener("click", restartGame);
 
 module.exports = {
   restartGame,
-  computerMove,
   disableBoxes,
   enableBoxes,
   showWinner,
