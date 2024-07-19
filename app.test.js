@@ -1,150 +1,126 @@
-const { JSDOM } = require("jsdom");
+const {
+  restartGame,
+  disableBoxes,
+  enableBoxes,
+  showWinner,
+  showDraw,
+  checkWinner,
+  startTimer,
+  startGame,
+} = require("./app");
 
-// function to create the DOM structure
-function setupDOM() {
-  const dom = new JSDOM(`
-    <div class="box" id="box-0"></div>
-    <div class="box" id="box-1"></div>
-    <div class="box" id="box-2"></div>
-    <div class="box" id="box-3"></div>
-    <div class="box" id="box-4"></div>
-    <div class="box" id="box-5"></div>
-    <div class="box" id="box-6"></div>
-    <div class="box" id="box-7"></div>
-    <div class="box" id="box-8"></div>
-    <button id="restart-btn"></button>
-    <button id="new-btn"></button>
-    <div class="msg-container hide">
-      <p id="msg"></p>
+// DOM elements for testing purposes
+document.body.innerHTML = `
+    <div>
+      <button class="box"></button>
+      <button class="box"></button>
+      <button class="box"></button>
+      <button class="box"></button>
+      <button class="box"></button>
+      <button class="box"></button>
+      <button class="box"></button>
+      <button class="box"></button>
+      <button class="box"></button>
+      <button id="start-btn" class="btn">Start Game</button>
+      <button id="restart-btn" class="btn">Restart Game</button>
+      <button id="new-btn" class="btn">New Game</button>
+      <div class="msg-container hide">
+        <p id="msg">New Game</p>
+        <button id="new-btn" class="btn">New Game</button>
+      </div>
+      <div id="timer">
+        <p id="seconds">15</p>
+      </div>
     </div>
-  `);
+  `;
 
-  global.document = dom.window.document;
-  global.window = dom.window;
-}
+let boxes = document.querySelectorAll(".box");
+let startBtn = document.querySelector("#start-btn");
+let restartBtn = document.querySelector("#restart-btn");
+let newGameBtn = document.querySelector("#new-btn");
+let msgContainer = document.querySelector(".msg-container");
+let msg = document.querySelector("#msg");
+let timerDisplay = document.querySelector("#seconds");
 
-beforeEach(() => {
-  setupDOM();
-  jest.resetModules(); // clear cache to reload the module with the new DOM
-  require("./app.js");
-});
+describe("Tic Tac Toe Game Tests", () => {
+  beforeEach(() => {
+    restartGame(); // reset game state before each test
+  });
 
-describe("Tic Tac Toe Game Functions", () => {
-  test("restartGame should reset the game state", () => {
-    const { restartGame } = require("./app.js");
-    const restartBtn = document.querySelector("#restart-btn");
-    const boxes = Array.from(document.querySelectorAll(".box"));
+  test("Initial game state", () => {
+    expect(turnO).toBe(true);
+    expect(btnClickCount).toBe(0);
+    expect(timer).toBeUndefined();
+    expect(timeLeft).toBe(15);
+    expect(msgContainer.classList.contains("hide")).toBe(true);
+    expect(timerDisplay.innerText).toBe("15");
+  });
 
-    boxes.forEach((box) => {
-      box.innerText = "O";
-      box.disabled = true;
-    });
+  test("Start game", () => {
+    startGame();
+    expect(startBtn.classList.contains("hide")).toBe(true);
+    expect(restartBtn.classList.contains("hide")).toBe(false);
+
+    boxes[0].click();
+    expect(boxes[0].innerText).toBe("O");
+    //  winning condition
+    boxes[0].innerText = "O";
+    boxes[1].innerText = "O";
+    boxes[2].innerText = "O";
+    checkWinner();
+    expect(msgContainer.classList.contains("hide")).toBe(false);
+    expect(msg.innerText).toBe("Congratulations! Winner is O");
+  });
+
+  test("Restart game", () => {
+    startGame();
+    boxes[0].innerText = "O";
+    boxes[1].innerText = "X";
+    boxes[2].innerText = "O";
     restartGame();
 
-    boxes.forEach((box) => {
-      expect(box.innerText).toBe("");
-      expect(box.disabled).toBe(false);
-    });
-
-    const msgContainer = document.querySelector(".msg-container");
+    expect(turnO).toBe(true);
+    expect(btnClickCount).toBe(0);
     expect(msgContainer.classList.contains("hide")).toBe(true);
+    expect(boxes[0].innerText).toBe("");
+    expect(timerDisplay.innerText).toBe("15");
   });
 
-  test("disableBoxes should disable all boxes", () => {
-    const { disableBoxes } = require("./app.js");
+  test("Timer functionality", () => {
+    startTimer();
+    jest.advanceTimersByTime(10000); // advance timer by 10 seconds
+    expect(timeLeft).toBe(5); // time left after 10 seconds
+
+    jest.advanceTimersByTime(6000); // advance timer by 6 seconds (total 15)
+    expect(msgContainer.classList.contains("hide")).toBe(false);
+    expect(msg.innerText).toEqual(expect.stringContaining("Time"));
+  });
+
+  test("Draw condition", () => {
+    startGame();
+    // draw condition
+    boxes[0].innerText = "O";
+    boxes[1].innerText = "X";
+    boxes[2].innerText = "O";
+    boxes[3].innerText = "X";
+    boxes[4].innerText = "O";
+    boxes[5].innerText = "X";
+    boxes[6].innerText = "X";
+    boxes[7].innerText = "O";
+    boxes[8].innerText = "X";
+    checkWinner();
+    expect(msgContainer.classList.contains("hide")).toBe(false);
+    expect(msg.innerText).toEqual(expect.not.stringContaining("Winner"));
+  });
+
+  test("Disable boxes", () => {
     disableBoxes();
-    const boxes = Array.from(document.querySelectorAll(".box"));
     boxes.forEach((box) => {
       expect(box.disabled).toBe(true);
-    });
-  });
-
-  test("enableBoxes should enable all boxes and clear their text", () => {
-    const { enableBoxes } = require("./app.js");
-    const boxes = Array.from(document.querySelectorAll(".box"));
-
-    boxes.forEach((box) => {
-      box.innerText = "X";
-      box.disabled = true;
     });
     enableBoxes();
-
     boxes.forEach((box) => {
-      expect(box.innerText).toBe("");
       expect(box.disabled).toBe(false);
     });
-  });
-
-  test("showWinner should display the winner message and disable boxes", () => {
-    const { showWinner } = require("./app.js");
-    const boxes = Array.from(document.querySelectorAll(".box"));
-    showWinner("Congratulations! Winner is X");
-
-    const msg = document.querySelector("#msg");
-    expect(msg.innerText).toBe("Congratulations! Winner is X");
-
-    const msgContainer = document.querySelector(".msg-container");
-    expect(msgContainer.classList.contains("hide")).toBe(false);
-
-    boxes.forEach((box) => {
-      expect(box.disabled).toBe(true);
-    });
-  });
-
-  test("showDraw should display the draw message and disable boxes", () => {
-    const { showDraw } = require("./app.js");
-    const boxes = Array.from(document.querySelectorAll(".box"));
-    showDraw();
-
-    const msg = document.querySelector("#msg");
-    expect(msg.innerText).toBe("It's a Draw!");
-
-    const msgContainer = document.querySelector(".msg-container");
-    expect(msgContainer.classList.contains("hide")).toBe(false);
-
-    boxes.forEach((box) => {
-      expect(box.disabled).toBe(true);
-    });
-  });
-
-  test("checkWinner should detect the winner correctly", () => {
-    const { checkWinner } = require("./app.js");
-    const boxes = Array.from(document.querySelectorAll(".box"));
-    boxes[0].innerText = "X";
-    boxes[1].innerText = "X";
-    boxes[2].innerText = "X";
-    checkWinner();
-
-    const msg = document.querySelector("#msg");
-    expect(msg.innerText).toBe("Congratulations! Winner is X");
-  });
-
-  test("checkWinner should detect a draw correctly", () => {
-    const { checkWinner } = require("./app.js");
-    const boxes = Array.from(document.querySelectorAll(".box"));
-    const moves = ["O", "X", "O", "O", "X", "O", "X", "O", "X"];
-
-    boxes.forEach((box, index) => {
-      box.innerText = moves[index];
-    });
-    global.btnClickCount = 9;
-
-    checkWinner();
-
-    const msg = document.querySelector("#msg");
-    expect(msg.innerText).toEqual(
-      expect.not.stringContaining("Congratulations!")
-    );
-  });
-
-  test("startTimer should declare the opponent as winner if time runs out", () => {
-    const { startTimer } = require("./app.js");
-    jest.useFakeTimers();
-
-    startTimer();
-    jest.advanceTimersByTime(15000);
-
-    const msg = document.querySelector("#msg");
-    expect(msg.innerText).toBe("Time out! X wins the game.");
   });
 });

@@ -1,7 +1,7 @@
 let boxes = document.querySelectorAll(".box");
-let startBtn = document.querySelector(".start-game");
-let restartBtn = document.querySelector(".restart-game");
-let newGameBtn = document.querySelector(".new-game");
+let startBtn = document.querySelector("#start-btn");
+let restartBtn = document.querySelector("#restart-btn");
+let newGameBtn = document.querySelector("#new-btn");
 let msgContainer = document.querySelector(".msg-container");
 let msg = document.querySelector("#msg");
 let timerDisplay = document.querySelector("#seconds");
@@ -64,7 +64,7 @@ const startTimer = () => {
     if (timeLeft <= 0) {
       clearInterval(timer);
       const winner = turnO ? "X" : "O";
-      showWinner(`Time out! ${winner} wins the game.`);
+      showWinner(`Time out! Winner is ${winner}.`);
     }
   }, 1000);
 };
@@ -137,4 +137,5 @@ module.exports = {
   showDraw,
   checkWinner,
   startTimer,
+  startGame,
 };
