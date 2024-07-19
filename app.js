@@ -11,6 +11,7 @@ let turnO = true; // playerO, playerX
 let btnClickCount = 0;
 let timer;
 let timeLeft = 15;
+let gameState = Array(9).fill("");
 
 const winPatterns = [
   [0, 1, 2],
@@ -27,15 +28,17 @@ const startGame = () => {
   startBtn.classList.add("hide");
   restartBtn.classList.remove("hide");
   startTimer();
-  boxes.forEach((box) => {
+  boxes.forEach((box, index) => {
     box.addEventListener("click", () => {
       if (turnO) {
         // playerO
         box.innerText = "O";
+        gameState[index] = "O";
         turnO = false;
       } else {
         // playerX
         box.innerText = "X";
+        gameState[index] = "X";
         turnO = true;
       }
       box.disabled = true;
@@ -73,6 +76,7 @@ const restartGame = () => {
   startTimer();
   turnO = true;
   btnClickCount = 0;
+  gameState.fill("");
   enableBoxes();
   msgContainer.classList.add("hide");
   clearTimeout(timer);
@@ -107,13 +111,17 @@ const showDraw = () => {
 
 const checkWinner = () => {
   for (pattern of winPatterns) {
-    let pos1Val = boxes[pattern[0]].innerText;
-    let pos2Val = boxes[pattern[1]].innerText;
-    let pos3Val = boxes[pattern[2]].innerText;
-
-    if (pos1Val !== "" && pos2Val !== "" && pos3Val !== "") {
-      if (pos1Val === pos2Val && pos2Val === pos3Val) {
-        showWinner(`Congratulations! Winner is ${pos1Val}`);
+    let [pos1Val, pos2Val, pos3Val] = pattern;
+    if (
+      gameState[pos1Val] !== "" &&
+      gameState[pos2Val] !== "" &&
+      gameState[pos3Val] !== ""
+    ) {
+      if (
+        gameState[pos1Val] === gameState[pos2Val] &&
+        gameState[pos2Val] === gameState[pos3Val]
+      ) {
+        showWinner(`Congratulations! Winner is ${gameState[pos1Val]}`);
         return;
       }
     }
