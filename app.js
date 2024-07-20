@@ -9,7 +9,6 @@ let timerContainer = document.querySelector("#timer");
 
 let turnO = true; // playerO, playerX
 let btnClickCount = 0;
-let timer;
 let timeLeft = 15;
 let gameState = Array(9).fill("");
 
@@ -24,10 +23,41 @@ const winPatterns = [
   [6, 7, 8],
 ];
 
+const timer = (() => {
+  let interval;
+
+  const start = () => {
+    clearTimeout(interval);
+    timeLeft = 15;
+    timerDisplay.innerText = timeLeft;
+    timerContainer.style.background = "";
+    interval = setInterval(() => {
+      timeLeft--;
+      timerDisplay.innerText = timeLeft < 10 ? `0${timeLeft}` : timeLeft;
+      if (timeLeft <= 5) {
+        timerContainer.style.backgroundColor = "red";
+      } else {
+        timerContainer.style.backgroundColor = "";
+      }
+      if (timeLeft <= 0) {
+        clearInterval(interval);
+        const winner = turnO ? "X" : "O";
+        showWinner(`Time out! Winner is ${winner}.`);
+      }
+    }, 1000);
+  };
+
+  const stop = () => {
+    clearInterval(interval);
+  };
+
+  return { start, stop };
+})();
+
 const startGame = () => {
   startBtn.classList.add("hide");
   restartBtn.classList.remove("hide");
-  startTimer();
+  timer.start();
   boxes.forEach((box, index) => {
     box.addEventListener("click", () => {
       if (turnO) {
@@ -45,49 +75,26 @@ const startGame = () => {
       btnClickCount++;
       checkWinner();
       if (msgContainer.classList.contains("hide")) {
-        startTimer();
+        timer.start();
       }
     });
   });
 };
 
-const startTimer = () => {
-  clearTimeout(timer);
-  timeLeft = 15;
-  timerDisplay.innerText = timeLeft;
-  timerContainer.style.backgroundColor = "";
-  timer = setInterval(() => {
-    timeLeft--;
-    timerDisplay.innerText = timeLeft < 10 ? `0${timeLeft}` : timeLeft;
-    if (timeLeft <= 5) {
-      timerContainer.style.backgroundColor = "red";
-    } else {
-      timerContainer.style.backgroundColor = "";
-    }
-    if (timeLeft <= 0) {
-      clearInterval(timer);
-      const winner = turnO ? "X" : "O";
-      showWinner(`Time out! Winner is ${winner}.`);
-    }
-  }, 1000);
-};
-
 const restartGame = () => {
-  startTimer();
+  timer.start();
   turnO = true;
   btnClickCount = 0;
-  gameState.fill("");
   enableBoxes();
+  gameState.fill("");
   msgContainer.classList.add("hide");
-  clearTimeout(timer);
-  startTimer();
 };
 
 const disableBoxes = () => {
   for (box of boxes) {
     box.disabled = true;
   }
-  clearTimeout(timer);
+  timer.stop();
 };
 
 const enableBoxes = () => {
@@ -144,6 +151,6 @@ module.exports = {
   showWinner,
   showDraw,
   checkWinner,
-  startTimer,
   startGame,
+  timer,
 };
