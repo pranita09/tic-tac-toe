@@ -23,6 +23,16 @@ const winPatterns = [
   [6, 7, 8],
 ];
 
+const moveSets = {
+  X: { moves: ["X3", "X2", "X1"], sizes: ["small", "medium", "large"] },
+  O: { moves: ["O3", "O2", "O1"], sizes: ["small", "medium", "large"] },
+};
+
+let playerMoves = {
+  X: { X3: 3, X2: 2, X1: 1 },
+  O: { O3: 3, O2: 2, O1: 1 },
+};
+
 const timer = (() => {
   let interval;
 
@@ -60,25 +70,45 @@ const startGame = () => {
   timer.start();
   boxes.forEach((box, index) => {
     box.addEventListener("click", () => {
-      if (turnO) {
-        // playerO
-        box.innerText = "O";
-        gameState[index] = "O";
-        turnO = false;
-      } else {
-        // playerX
-        box.innerText = "X";
-        gameState[index] = "X";
-        turnO = true;
-      }
-      box.disabled = true;
-      btnClickCount++;
-      checkWinner();
-      if (msgContainer.classList.contains("hide")) {
-        timer.start();
+      let currentPlayer = turnO ? "O" : "X";
+      let move = getMove(currentPlayer);
+      if (move && canPlaceMove(box, move)) {
+        box.innerText = move;
+        box.classList.add(
+          moveSets[currentPlayer].sizes[
+            moveSets[currentPlayer].moves.indexOf(move)
+          ]
+        );
+        gameState[index] = move;
+        playerMoves[currentPlayer][move]--;
+        turnO = !turnO;
+        btnClickCount++;
+        checkWinner();
+        if (msgContainer.classList.contains("hide")) {
+          timer.start();
+        }
       }
     });
   });
+};
+
+const getMove = (player) => {
+  let moves = moveSets[player].moves;
+  for (let move of moves) {
+    if (playerMoves[player][move] > 0) {
+      return move;
+    }
+  }
+  return null;
+};
+
+const canPlaceMove = (box, move) => {
+  if (!box.innerText) return true;
+  let currentMove = box.innerText;
+  let currentPlayer = currentMove.charAt(0);
+  let currentMoveSize = moveSets[currentPlayer].moves.indexOf(currentMove);
+  let newMoveSize = moveSets[move.charAt(0)].moves.indexOf(move);
+  return newMoveSize > currentMoveSize;
 };
 
 const restartGame = () => {
@@ -87,6 +117,10 @@ const restartGame = () => {
   btnClickCount = 0;
   enableBoxes();
   gameState.fill("");
+  playerMoves = {
+    X: { X3: 3, X2: 2, X1: 1 },
+    O: { O3: 3, O2: 2, O1: 1 },
+  };
   msgContainer.classList.add("hide");
 };
 
@@ -101,6 +135,7 @@ const enableBoxes = () => {
   for (box of boxes) {
     box.disabled = false;
     box.innerText = "";
+    box.classList.remove("small", "medium", "large");
   }
 };
 
@@ -111,7 +146,7 @@ const showWinner = (winner) => {
 };
 
 const showDraw = () => {
-  msg.innerText = "It's a Draw!";
+  msg.innerText = "End of the moves. It's a Draw!";
   msgContainer.classList.remove("hide");
   disableBoxes();
 };
@@ -125,15 +160,20 @@ const checkWinner = () => {
       gameState[pos3Val] !== ""
     ) {
       if (
-        gameState[pos1Val] === gameState[pos2Val] &&
-        gameState[pos2Val] === gameState[pos3Val]
+        gameState[pos1Val].charAt(0) === gameState[pos2Val].charAt(0) &&
+        gameState[pos2Val].charAt(0) === gameState[pos3Val].charAt(0)
       ) {
-        showWinner(`Congratulations! Winner is ${gameState[pos1Val]}`);
+        setTimeout(
+          showWinner(
+            `Congratulations! Winner is ${gameState[pos1Val].charAt(0)}`
+          ),
+          10000
+        );
         return;
       }
     }
   }
-  if (btnClickCount === 9) {
+  if (btnClickCount === 12) {
     showDraw();
   }
 };
@@ -153,4 +193,6 @@ module.exports = {
   checkWinner,
   startGame,
   timer,
+  getMove,
+  canPlaceMove,
 };

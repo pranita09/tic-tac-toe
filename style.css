@@ -85,3 +85,15 @@ h1 {
 .hide {
   display: none;
 }
+
+.small {
+  font-size: 24px;
+}
+.medium {
+  font-size: 32px;
+  color: blue;
+}
+.large {
+  font-size: 40px;
+  color: green;
+}
