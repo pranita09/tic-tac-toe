@@ -94,12 +94,12 @@ h1 {
 
 .medium {
   font-size: 32px;
-  color: blue;
+  /* color: blue; */
 }
 
 .large {
   font-size: 40px;
-  color: green;
+  /* color: green; */
 }
 
 .piece-selection {

@@ -33,6 +33,20 @@ let playerMoves = {
   O: { O1: 3, O2: 2, O3: 1 },
 };
 
+let selectedMove = {
+  X: "X1",
+  O: "O1",
+};
+
+const updatePieceCount = () => {
+  for (let player in playerMoves) {
+    for (let move in playerMoves[player]) {
+      document.querySelector(`#remaining-${move}`).innerText =
+        playerMoves[player][move];
+    }
+  }
+};
+
 const timer = (() => {
   let interval;
 
@@ -81,6 +95,7 @@ const startGame = () => {
         );
         gameState[index] = move;
         playerMoves[currentPlayer][move]--;
+        updatePieceCount();
         turnO = !turnO;
         btnClickCount++;
         checkWinner();
@@ -88,6 +103,12 @@ const startGame = () => {
           timer.start();
         }
       }
+    });
+  });
+  document.querySelectorAll(".player div").forEach((piece) => {
+    piece.addEventListener("click", () => {
+      let player = piece.parentElement.id.includes("x") ? "X" : "O";
+      selectedMove[player] = piece.getAttribute("value");
     });
   });
 };
@@ -121,7 +142,12 @@ const restartGame = () => {
     X: { X1: 3, X2: 2, X3: 1 },
     O: { O1: 3, O2: 2, O3: 1 },
   };
+  selectedMove = {
+    X: "X1",
+    O: "O1",
+  };
   msgContainer.classList.add("hide");
+  updatePieceCount();
 };
 
 const disableBoxes = () => {
@@ -163,11 +189,8 @@ const checkWinner = () => {
         gameState[pos1Val].charAt(0) === gameState[pos2Val].charAt(0) &&
         gameState[pos2Val].charAt(0) === gameState[pos3Val].charAt(0)
       ) {
-        setTimeout(
-          showWinner(
-            `Congratulations! Winner is ${gameState[pos1Val].charAt(0)}`
-          ),
-          10000
+        showWinner(
+          `Congratulations! Winner is ${gameState[pos1Val].charAt(0)}`
         );
         return;
       }
