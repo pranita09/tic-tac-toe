@@ -94,12 +94,10 @@ h1 {
 
 .medium {
   font-size: 32px;
-  /* color: blue; */
 }
 
 .large {
   font-size: 40px;
-  /* color: green; */
 }
 
 .piece-selection {
@@ -116,6 +114,7 @@ h1 {
 }
 
 .player div {
+  border: 1px solid rgb(140, 197, 136);
   border-radius: 0.5rem;
   position: relative;
   font-size: 1.25rem;

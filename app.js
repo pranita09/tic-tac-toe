@@ -6,6 +6,7 @@ let msgContainer = document.querySelector(".msg-container");
 let msg = document.querySelector("#msg");
 let timerDisplay = document.querySelector("#seconds");
 let timerContainer = document.querySelector("#timer");
+let playerPieces = document.querySelectorAll(".player div");
 
 let turnO = true; // playerO, playerX
 let btnClickCount = 0;
@@ -47,6 +48,18 @@ const updatePieceCount = () => {
   }
 };
 
+const updateSelectedPiece = () => {
+  playerPieces.forEach((piece) => {
+    piece.style.border = "";
+  });
+  document.querySelector(`[value="${selectedMove.X}"]`).style.border = turnO
+    ? ""
+    : "1px solid red";
+  document.querySelector(`[value="${selectedMove.O}"]`).style.border = turnO
+    ? "1px solid red"
+    : "";
+};
+
 const timer = (() => {
   let interval;
 
@@ -82,11 +95,16 @@ const startGame = () => {
   startBtn.classList.add("hide");
   restartBtn.classList.remove("hide");
   timer.start();
+  updateSelectedPiece();
   boxes.forEach((box, index) => {
     box.addEventListener("click", () => {
       let currentPlayer = turnO ? "O" : "X";
-      let move = getMove(currentPlayer);
-      if (move && canPlaceMove(box, move)) {
+      let move = selectedMove[currentPlayer];
+      if (
+        move &&
+        playerMoves[currentPlayer][move] > 0 &&
+        canPlaceMove(box, move)
+      ) {
         box.innerText = move;
         box.classList.add(
           moveSets[currentPlayer].sizes[
@@ -102,25 +120,17 @@ const startGame = () => {
         if (msgContainer.classList.contains("hide")) {
           timer.start();
         }
+        updateSelectedPiece();
       }
     });
   });
-  document.querySelectorAll(".player div").forEach((piece) => {
+  playerPieces.forEach((piece) => {
     piece.addEventListener("click", () => {
       let player = piece.parentElement.id.includes("x") ? "X" : "O";
       selectedMove[player] = piece.getAttribute("value");
+      updateSelectedPiece();
     });
   });
-};
-
-const getMove = (player) => {
-  let moves = moveSets[player].moves;
-  for (let move of moves) {
-    if (playerMoves[player][move] > 0) {
-      return move;
-    }
-  }
-  return null;
 };
 
 const canPlaceMove = (box, move) => {
@@ -148,6 +158,7 @@ const restartGame = () => {
   };
   msgContainer.classList.add("hide");
   updatePieceCount();
+  updateSelectedPiece();
 };
 
 const disableBoxes = () => {
@@ -216,6 +227,7 @@ module.exports = {
   checkWinner,
   startGame,
   timer,
-  getMove,
   canPlaceMove,
+  updatePieceCount,
+  updateSelectedPiece,
 };
