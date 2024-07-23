@@ -7,8 +7,9 @@ const {
   checkWinner,
   startGame,
   timer,
-  getMove,
   canPlaceMove,
+  updatePieceCount,
+  updateSelectedPiece,
 } = require("./app");
 
 // Mock DOM elements for testing purposes
@@ -32,6 +33,16 @@ document.body.innerHTML = `
     <div id="timer">
       <p id="seconds">15</p>
     </div>
+    <div id="player-piece-x" class="player">
+      <div id="X1" value="X1">X1<span id="remaining-X1" class="piece-count">3</span></div>
+      <div id="X2" value="X2">X2<span id="remaining-X2" class="piece-count">2</span></div>
+      <div id="X3" value="X3">X3<span id="remaining-X3" class="piece-count">1</span></div>
+    </div>
+    <div id="player-piece-o" class="player">
+      <div id="O1" value="O1">O1<span id="remaining-O1" class="piece-count">3</span></div>
+      <div id="O2" value="O2">O2<span id="remaining-O2" class="piece-count">2</span></div>
+      <div id="O3" value="O3">O3<span id="remaining-O3" class="piece-count">1</span></div>
+    </div>
   </div>
 `;
 
@@ -43,10 +54,11 @@ let msgContainer = document.querySelector(".msg-container");
 let msg = document.querySelector("#msg");
 let timerDisplay = document.querySelector("#seconds");
 let timerContainer = document.querySelector("#timer");
+let playerPieces = document.querySelectorAll(".player div");
 
 describe("Upgraded Tic Tac Toe Game Tests", () => {
   beforeEach(() => {
-    restartGame(); // Reset game state before each test
+    restartGame(); // reset game state before each test
   });
 
   test("Initial game state", () => {
@@ -63,9 +75,9 @@ describe("Upgraded Tic Tac Toe Game Tests", () => {
     expect(restartBtn.classList.contains("hide")).toBe(false);
 
     boxes[0].click();
-    expect(boxes[0].innerText).toBe("O3");
+    expect(boxes[0].innerText).toBe("O1"); // default starting piece should be O1
 
-    // Simulate winning condition
+    // winning condition
     boxes[1].click();
     boxes[2].click();
     boxes[3].click();
@@ -75,13 +87,13 @@ describe("Upgraded Tic Tac Toe Game Tests", () => {
     boxes[7].click();
     boxes[8].click();
 
-    // to ensure game continues as expected
+    // to check game does not end early
     expect(msgContainer.classList.contains("hide")).toBe(true);
 
-    // winning move
-    boxes[0].innerText = "O3";
+    // set up a winning condition
+    boxes[0].innerText = "O1";
     boxes[1].innerText = "O2";
-    boxes[2].innerText = "O1";
+    boxes[2].innerText = "O3";
     checkWinner();
     expect(msgContainer.classList.contains("hide")).toBe(false);
     expect(msg.innerText).toBe("Congratulations! Winner is O");
@@ -89,7 +101,7 @@ describe("Upgraded Tic Tac Toe Game Tests", () => {
 
   test("Restart game", () => {
     startGame();
-    boxes[0].innerText = "O3";
+    boxes[0].innerText = "O1";
     boxes[1].innerText = "X3";
     boxes[2].innerText = "O2";
     restartGame();
@@ -119,16 +131,16 @@ describe("Upgraded Tic Tac Toe Game Tests", () => {
 
   test("Draw condition", () => {
     startGame();
-    // draw condition
-    boxes[0].innerText = "O3";
+    // set up draw condition
+    boxes[0].innerText = "O1";
     boxes[1].innerText = "X3";
     boxes[2].innerText = "O2";
     boxes[3].innerText = "X2";
-    boxes[4].innerText = "O1";
+    boxes[4].innerText = "O3";
     boxes[5].innerText = "X1";
-    boxes[6].innerText = "X3";
-    boxes[7].innerText = "O3";
-    boxes[8].innerText = "X2";
+    boxes[6].innerText = "X2";
+    boxes[7].innerText = "O1";
+    boxes[8].innerText = "X3";
     btnClickCount = 12; // max moves reached
 
     checkWinner();
@@ -148,29 +160,33 @@ describe("Upgraded Tic Tac Toe Game Tests", () => {
   });
 
   test("Can place move", () => {
-    expect(canPlaceMove(boxes[0], "O3")).toBe(true); // empty box
-    boxes[0].innerText = "O3";
+    expect(canPlaceMove(boxes[0], "O1")).toBe(true); // empty box
+    boxes[0].innerText = "O1";
     expect(canPlaceMove(boxes[0], "O2")).toBe(true); // larger move
-    expect(canPlaceMove(boxes[0], "O1")).toBe(true); // largest move
-    expect(canPlaceMove(boxes[0], "O3")).toBe(false); // same size move
-    expect(canPlaceMove(boxes[0], "X3")).toBe(false); // smaller move
+    expect(canPlaceMove(boxes[0], "O3")).toBe(true); // largest move
+    expect(canPlaceMove(boxes[0], "O1")).toBe(false); // same size move
+    expect(canPlaceMove(boxes[0], "X3")).toBe(false); // different player
   });
 
-  test("Get move", () => {
-    expect(getMove("X")).toBe("X3");
-    playerMoves.X.X3 = 0;
-    expect(getMove("X")).toBe("X2");
-    playerMoves.X.X2 = 0;
-    expect(getMove("X")).toBe("X1");
-    playerMoves.X.X1 = 0;
-    expect(getMove("X")).toBe(null);
+  test("Update piece count", () => {
+    playerMoves = {
+      X: { X1: 2, X2: 1, X3: 0 },
+      O: { O1: 1, O2: 2, O3: 0 },
+    };
+    updatePieceCount();
+    expect(document.querySelector("#remaining-X1").innerText).toBe("2");
+    expect(document.querySelector("#remaining-X2").innerText).toBe("1");
+    expect(document.querySelector("#remaining-X3").innerText).toBe("0");
+    expect(document.querySelector("#remaining-O1").innerText).toBe("1");
+    expect(document.querySelector("#remaining-O2").innerText).toBe("2");
+    expect(document.querySelector("#remaining-O3").innerText).toBe("0");
+  });
 
-    expect(getMove("O")).toBe("O3");
-    playerMoves.O.O3 = 0;
-    expect(getMove("O")).toBe("O2");
-    playerMoves.O.O2 = 0;
-    expect(getMove("O")).toBe("O1");
-    playerMoves.O.O1 = 0;
-    expect(getMove("O")).toBe(null);
+  test("Update selected piece", () => {
+    selectedMove.X = "X3";
+    selectedMove.O = "O1";
+    updateSelectedPiece();
+    expect(document.querySelector(`#X3`).style.border).toBe("1px solid red");
+    expect(document.querySelector(`#O1`).style.border).toBe("");
   });
 });
