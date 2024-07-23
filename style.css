@@ -10,7 +10,7 @@ body {
 }
 
 h1 {
-  padding: 2.5rem 0 0 0;
+  padding: 2.5rem 0 1rem 0;
 }
 
 .container {
@@ -34,6 +34,7 @@ h1 {
   color: #fff;
   font-size: 1.15em;
   margin-left: 24rem;
+  margin-top: 0.75rem;
 }
 
 .game {
@@ -60,6 +61,7 @@ h1 {
 
 .btn {
   padding: 0.75rem 1rem;
+  margin: 1.75rem 0;
   font-size: 1rem;
   background-color: #191913;
   color: #ffffff;
@@ -89,11 +91,46 @@ h1 {
 .small {
   font-size: 24px;
 }
+
 .medium {
   font-size: 32px;
   color: blue;
 }
+
 .large {
   font-size: 40px;
   color: green;
+}
+
+.piece-selection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8rem;
+  padding-top: 0.75rem;
+}
+
+.player {
+  display: flex;
+  gap: 1.25rem;
+}
+
+.player div {
+  border-radius: 0.5rem;
+  position: relative;
+  font-size: 1.25rem;
+  padding: 0.5rem;
+  background-color: rgb(140, 197, 136);
+  cursor: pointer;
+}
+
+.player div span {
+  position: absolute;
+  top: -0.5rem;
+  right: -0.5rem;
+  font-size: 0.8rem;
+  border-radius: 50%;
+  padding: 0.15rem 0.3rem;
+  background-color: rgb(63, 121, 207);
+  color: #fff;
 }

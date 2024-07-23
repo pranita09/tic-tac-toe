@@ -24,13 +24,13 @@ const winPatterns = [
 ];
 
 const moveSets = {
-  X: { moves: ["X3", "X2", "X1"], sizes: ["small", "medium", "large"] },
-  O: { moves: ["O3", "O2", "O1"], sizes: ["small", "medium", "large"] },
+  X: { moves: ["X1", "X2", "X3"], sizes: ["small", "medium", "large"] },
+  O: { moves: ["O1", "O2", "O3"], sizes: ["small", "medium", "large"] },
 };
 
 let playerMoves = {
-  X: { X3: 3, X2: 2, X1: 1 },
-  O: { O3: 3, O2: 2, O1: 1 },
+  X: { X1: 3, X2: 2, X3: 1 },
+  O: { O1: 3, O2: 2, O3: 1 },
 };
 
 const timer = (() => {
@@ -118,8 +118,8 @@ const restartGame = () => {
   enableBoxes();
   gameState.fill("");
   playerMoves = {
-    X: { X3: 3, X2: 2, X1: 1 },
-    O: { O3: 3, O2: 2, O1: 1 },
+    X: { X1: 3, X2: 2, X3: 1 },
+    O: { O1: 3, O2: 2, O3: 1 },
   };
   msgContainer.classList.add("hide");
 };
