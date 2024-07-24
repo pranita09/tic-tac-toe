@@ -10,6 +10,9 @@ const {
   canPlaceMove,
   updatePieceCount,
   updateSelectedPiece,
+  displayTurn,
+  placeMove,
+  gameEnded,
 } = require("./app");
 
 // Mock DOM elements for testing purposes
@@ -43,6 +46,7 @@ document.body.innerHTML = `
       <div id="O2" value="O2">O2<span id="remaining-O2" class="piece-count">2</span></div>
       <div id="O3" value="O3">O3<span id="remaining-O3" class="piece-count">1</span></div>
     </div>
+    <div class="turn"></div>
   </div>
 `;
 
@@ -55,6 +59,7 @@ let msg = document.querySelector("#msg");
 let timerDisplay = document.querySelector("#seconds");
 let timerContainer = document.querySelector("#timer");
 let playerPieces = document.querySelectorAll(".player div");
+let turn = document.querySelector(".turn");
 
 describe("Upgraded Tic Tac Toe Game Tests", () => {
   beforeEach(() => {
@@ -77,7 +82,6 @@ describe("Upgraded Tic Tac Toe Game Tests", () => {
     boxes[0].click();
     expect(boxes[0].innerText).toBe("O1"); // default starting piece should be O1
 
-    // winning condition
     boxes[1].click();
     boxes[2].click();
     boxes[3].click();
@@ -188,5 +192,25 @@ describe("Upgraded Tic Tac Toe Game Tests", () => {
     updateSelectedPiece();
     expect(document.querySelector(`#X3`).style.border).toBe("1px solid red");
     expect(document.querySelector(`#O1`).style.border).toBe("");
+  });
+
+  test("Prevent moves after game ends", () => {
+    startGame();
+    boxes[0].click();
+    expect(turnO).toBe(false);
+    showWinner("Congratulations! Winner is O");
+    expect(gameEnded).toBe(true);
+
+    boxes[1].click();
+    expect(boxes[1].innerText).toBe(""); // should not change
+  });
+
+  test("Display turn message correctly", () => {
+    displayTurn("O's Turn");
+    expect(turn.innerText).toBe("O's Turn");
+
+    // verify that the turn message disappears after 600ms
+    jest.advanceTimersByTime(600);
+    expect(turn.style.display).toBe("none");
   });
 });

@@ -283,4 +283,7 @@ module.exports = {
   canPlaceMove,
   updatePieceCount,
   updateSelectedPiece,
+  displayTurn,
+  placeMove,
+  gameEnded,
 };
