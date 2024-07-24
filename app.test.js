@@ -213,4 +213,38 @@ describe("Upgraded Tic Tac Toe Game Tests", () => {
     jest.advanceTimersByTime(600);
     expect(turn.style.display).toBe("none");
   });
+
+  test("Drag and drop move", () => {
+    startGame();
+
+    const dragStartEvent = new Event("dragstart");
+    const dropEvent = new Event("drop");
+    const dragOverEvent = new Event("dragover");
+
+    playerPieces[0].dispatchEvent(
+      new CustomEvent("dragstart", {
+        dataTransfer: {
+          setData: (type, value) => {
+            this.value = value;
+          },
+        },
+        bubbles: true,
+        cancelable: true,
+      })
+    );
+
+    playerPieces[0].dispatchEvent(dragStartEvent);
+
+    const box = boxes[0];
+    box.dispatchEvent(dragOverEvent);
+    box.dispatchEvent(
+      new CustomEvent("drop", {
+        dataTransfer: { getData: () => "X1" },
+        bubbles: true,
+        cancelable: true,
+      })
+    );
+
+    expect(box.innerText).toBe("X1");
+  });
 });
