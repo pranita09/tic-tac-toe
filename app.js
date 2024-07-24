@@ -7,6 +7,7 @@ let msg = document.querySelector("#msg");
 let timerDisplay = document.querySelector("#seconds");
 let timerContainer = document.querySelector("#timer");
 let playerPieces = document.querySelectorAll(".player div");
+let turn = document.querySelector(".turn");
 
 let turnO = true; // playerO, playerX
 let btnClickCount = 0;
@@ -96,6 +97,7 @@ const startGame = () => {
   restartBtn.classList.remove("hide");
   timer.start();
   updateSelectedPiece();
+  displayTurn(turnO ? "O's Turn" : "X's Turn");
   boxes.forEach((box, index) => {
     box.addEventListener("click", () => {
       let currentPlayer = turnO ? "O" : "X";
@@ -121,6 +123,9 @@ const startGame = () => {
           timer.start();
         }
         updateSelectedPiece();
+        displayTurn(currentPlayer === "O" ? "X's Turn" : "O's Turn");
+      } else {
+        displayTurn("Invalid Move");
       }
     });
   });
@@ -142,6 +147,14 @@ const canPlaceMove = (box, move) => {
   return newMoveSize > currentMoveSize;
 };
 
+const displayTurn = (content) => {
+  turn.innerText = content;
+  turn.style.display = "block";
+  setTimeout(() => {
+    turn.style.display = "none";
+  }, 600);
+};
+
 const restartGame = () => {
   timer.start();
   turnO = true;
@@ -159,6 +172,7 @@ const restartGame = () => {
   msgContainer.classList.add("hide");
   updatePieceCount();
   updateSelectedPiece();
+  displayTurn("O's Turn");
 };
 
 const disableBoxes = () => {

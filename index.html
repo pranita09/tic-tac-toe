@@ -7,6 +7,7 @@
     <title>Tic Tac Toe</title>
   </head>
   <body>
+    <div class="turn"></div>
     <div class="msg-container hide">
       <p id="msg">New Game</p>
       <button id="new-btn" class="btn">New Game</button>
@@ -31,6 +32,17 @@
               O3<span id="remaining-O3" class="piece-count">1</span>
             </div>
           </div>
+          <div class="game">
+            <button class="box"></button>
+            <button class="box"></button>
+            <button class="box"></button>
+            <button class="box"></button>
+            <button class="box"></button>
+            <button class="box"></button>
+            <button class="box"></button>
+            <button class="box"></button>
+            <button class="box"></button>
+          </div>
           <div id="player-piece-x" class="player">
             <div value="X1">
               X1<span id="remaining-X1" class="piece-count">3</span>
@@ -42,17 +54,6 @@
               X3<span id="remaining-X3" class="piece-count">1</span>
             </div>
           </div>
-        </div>
-        <div class="game">
-          <button class="box"></button>
-          <button class="box"></button>
-          <button class="box"></button>
-          <button class="box"></button>
-          <button class="box"></button>
-          <button class="box"></button>
-          <button class="box"></button>
-          <button class="box"></button>
-          <button class="box"></button>
         </div>
       </div>
       <button id="start-btn" class="btn">Start Game</button>
