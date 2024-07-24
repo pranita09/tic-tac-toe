@@ -9,8 +9,8 @@ let timerContainer = document.querySelector("#timer");
 
 let turnO = true; // playerO, playerX
 let btnClickCount = 0;
-let timer;
 let timeLeft = 15;
+let gameState = Array(9).fill("");
 
 const winPatterns = [
   [0, 1, 2],
@@ -23,67 +23,78 @@ const winPatterns = [
   [6, 7, 8],
 ];
 
+const timer = (() => {
+  let interval;
+
+  const start = () => {
+    clearTimeout(interval);
+    timeLeft = 15;
+    timerDisplay.innerText = timeLeft;
+    timerContainer.style.background = "";
+    interval = setInterval(() => {
+      timeLeft--;
+      timerDisplay.innerText = timeLeft < 10 ? `0${timeLeft}` : timeLeft;
+      if (timeLeft <= 5) {
+        timerContainer.style.backgroundColor = "red";
+      } else {
+        timerContainer.style.backgroundColor = "";
+      }
+      if (timeLeft <= 0) {
+        clearInterval(interval);
+        const winner = turnO ? "X" : "O";
+        showWinner(`Time out! Winner is ${winner}.`);
+      }
+    }, 1000);
+  };
+
+  const stop = () => {
+    clearInterval(interval);
+  };
+
+  return { start, stop };
+})();
+
 const startGame = () => {
   startBtn.classList.add("hide");
   restartBtn.classList.remove("hide");
-  startTimer();
-  boxes.forEach((box) => {
+  timer.start();
+  boxes.forEach((box, index) => {
     box.addEventListener("click", () => {
       if (turnO) {
         // playerO
         box.innerText = "O";
+        gameState[index] = "O";
         turnO = false;
       } else {
         // playerX
         box.innerText = "X";
+        gameState[index] = "X";
         turnO = true;
       }
       box.disabled = true;
       btnClickCount++;
       checkWinner();
       if (msgContainer.classList.contains("hide")) {
-        startTimer();
+        timer.start();
       }
     });
   });
 };
 
-const startTimer = () => {
-  clearTimeout(timer);
-  timeLeft = 15;
-  timerDisplay.innerText = timeLeft;
-  timerContainer.style.backgroundColor = "";
-  timer = setInterval(() => {
-    timeLeft--;
-    timerDisplay.innerText = timeLeft < 10 ? `0${timeLeft}` : timeLeft;
-    if (timeLeft <= 5) {
-      timerContainer.style.backgroundColor = "red";
-    } else {
-      timerContainer.style.backgroundColor = "";
-    }
-    if (timeLeft <= 0) {
-      clearInterval(timer);
-      const winner = turnO ? "X" : "O";
-      showWinner(`Time out! Winner is ${winner}.`);
-    }
-  }, 1000);
-};
-
 const restartGame = () => {
-  startTimer();
+  timer.start();
   turnO = true;
   btnClickCount = 0;
   enableBoxes();
+  gameState.fill("");
   msgContainer.classList.add("hide");
-  clearTimeout(timer);
-  startTimer();
 };
 
 const disableBoxes = () => {
   for (box of boxes) {
     box.disabled = true;
   }
-  clearTimeout(timer);
+  timer.stop();
 };
 
 const enableBoxes = () => {
@@ -107,13 +118,17 @@ const showDraw = () => {
 
 const checkWinner = () => {
   for (pattern of winPatterns) {
-    let pos1Val = boxes[pattern[0]].innerText;
-    let pos2Val = boxes[pattern[1]].innerText;
-    let pos3Val = boxes[pattern[2]].innerText;
-
-    if (pos1Val !== "" && pos2Val !== "" && pos3Val !== "") {
-      if (pos1Val === pos2Val && pos2Val === pos3Val) {
-        showWinner(`Congratulations! Winner is ${pos1Val}`);
+    let [pos1Val, pos2Val, pos3Val] = pattern;
+    if (
+      gameState[pos1Val] !== "" &&
+      gameState[pos2Val] !== "" &&
+      gameState[pos3Val] !== ""
+    ) {
+      if (
+        gameState[pos1Val] === gameState[pos2Val] &&
+        gameState[pos2Val] === gameState[pos3Val]
+      ) {
+        showWinner(`Congratulations! Winner is ${gameState[pos1Val]}`);
         return;
       }
     }
@@ -136,6 +151,6 @@ module.exports = {
   showWinner,
   showDraw,
   checkWinner,
-  startTimer,
   startGame,
+  timer,
 };
