@@ -13,6 +13,7 @@ let turnO = true; // playerO, playerX
 let btnClickCount = 0;
 let timeLeft = 15;
 let gameState = Array(9).fill("");
+let gameEnded = false;
 
 const winPatterns = [
   [0, 1, 2],
@@ -98,6 +99,7 @@ const startGame = () => {
   timer.start();
   updateSelectedPiece();
   displayTurn(turnO ? "O's Turn" : "X's Turn");
+  gameEnded = false;
 
   boxes.forEach((box, index) => {
     box.addEventListener("dragover", (e) => {
@@ -160,12 +162,12 @@ const placeMove = (box, index, currentPlayer, move) => {
   gameState[index] = move;
   playerMoves[currentPlayer][move]--;
   updatePieceCount();
-  turnO = !turnO;
   btnClickCount++;
   checkWinner();
-  if (msgContainer.classList.contains("hide")) {
-    timer.start();
-  }
+  if (gameEnded) return;
+
+  turnO = !turnO;
+  timer.start();
   updateSelectedPiece();
   displayTurn(currentPlayer === "O" ? "X's Turn" : "O's Turn");
 };
@@ -207,6 +209,7 @@ const restartGame = () => {
   updatePieceCount();
   updateSelectedPiece();
   displayTurn("O's Turn");
+  gameEnded = false;
 };
 
 const disableBoxes = () => {
@@ -228,12 +231,14 @@ const showWinner = (winner) => {
   msg.innerText = winner;
   msgContainer.classList.remove("hide");
   disableBoxes();
+  gameEnded = true;
 };
 
 const showDraw = () => {
   msg.innerText = "End of the moves. It's a Draw!";
   msgContainer.classList.remove("hide");
   disableBoxes();
+  gameEnded = true;
 };
 
 const checkWinner = () => {
