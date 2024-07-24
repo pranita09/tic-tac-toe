@@ -6,11 +6,14 @@ let msgContainer = document.querySelector(".msg-container");
 let msg = document.querySelector("#msg");
 let timerDisplay = document.querySelector("#seconds");
 let timerContainer = document.querySelector("#timer");
+let playerPieces = document.querySelectorAll(".player div");
+let turn = document.querySelector(".turn");
 
 let turnO = true; // playerO, playerX
 let btnClickCount = 0;
 let timeLeft = 15;
 let gameState = Array(9).fill("");
+let gameEnded = false;
 
 const winPatterns = [
   [0, 1, 2],
@@ -22,6 +25,42 @@ const winPatterns = [
   [3, 4, 5],
   [6, 7, 8],
 ];
+
+const moveSets = {
+  X: { moves: ["X1", "X2", "X3"], sizes: ["small", "medium", "large"] },
+  O: { moves: ["O1", "O2", "O3"], sizes: ["small", "medium", "large"] },
+};
+
+let playerMoves = {
+  X: { X1: 3, X2: 2, X3: 1 },
+  O: { O1: 3, O2: 2, O3: 1 },
+};
+
+let selectedMove = {
+  X: "X1",
+  O: "O1",
+};
+
+const updatePieceCount = () => {
+  for (let player in playerMoves) {
+    for (let move in playerMoves[player]) {
+      document.querySelector(`#remaining-${move}`).innerText =
+        playerMoves[player][move];
+    }
+  }
+};
+
+const updateSelectedPiece = () => {
+  playerPieces.forEach((piece) => {
+    piece.style.border = "";
+  });
+  document.querySelector(`[value="${selectedMove.X}"]`).style.border = turnO
+    ? ""
+    : "1px solid red";
+  document.querySelector(`[value="${selectedMove.O}"]`).style.border = turnO
+    ? "1px solid red"
+    : "";
+};
 
 const timer = (() => {
   let interval;
@@ -58,27 +97,98 @@ const startGame = () => {
   startBtn.classList.add("hide");
   restartBtn.classList.remove("hide");
   timer.start();
+  updateSelectedPiece();
+  displayTurn(turnO ? "O's Turn" : "X's Turn");
+  gameEnded = false;
+
   boxes.forEach((box, index) => {
-    box.addEventListener("click", () => {
-      if (turnO) {
-        // playerO
-        box.innerText = "O";
-        gameState[index] = "O";
-        turnO = false;
+    box.addEventListener("dragover", (e) => {
+      e.preventDefault();
+    });
+
+    box.addEventListener("drop", (e) => {
+      e.preventDefault();
+      let currentPlayer = turnO ? "O" : "X";
+      let move = e.dataTransfer.getData("text");
+      if (
+        move &&
+        playerMoves[currentPlayer][move] > 0 &&
+        canPlaceMove(box, move)
+      ) {
+        placeMove(box, index, currentPlayer, move);
       } else {
-        // playerX
-        box.innerText = "X";
-        gameState[index] = "X";
-        turnO = true;
+        displayTurn("Invalid Move");
       }
-      box.disabled = true;
-      btnClickCount++;
-      checkWinner();
-      if (msgContainer.classList.contains("hide")) {
-        timer.start();
+    });
+
+    box.addEventListener("click", () => {
+      let currentPlayer = turnO ? "O" : "X";
+      let move = selectedMove[currentPlayer];
+      if (
+        move &&
+        playerMoves[currentPlayer][move] > 0 &&
+        canPlaceMove(box, move)
+      ) {
+        placeMove(box, index, currentPlayer, move);
+      } else {
+        displayTurn("Invalid Move");
       }
     });
   });
+
+  playerPieces.forEach((piece) => {
+    piece.setAttribute("draggable", true);
+
+    piece.addEventListener("dragstart", (e) => {
+      let player = piece.parentElement.id.includes("x") ? "X" : "O";
+      selectedMove[player] = piece.getAttribute("value");
+      updateSelectedPiece();
+      e.dataTransfer.setData("text", selectedMove[player]);
+    });
+
+    piece.addEventListener("click", () => {
+      let player = piece.parentElement.id.includes("x") ? "X" : "O";
+      selectedMove[player] = piece.getAttribute("value");
+      updateSelectedPiece();
+    });
+  });
+};
+
+const placeMove = (box, index, currentPlayer, move) => {
+  box.innerText = move;
+  box.classList.add(
+    moveSets[currentPlayer].sizes[moveSets[currentPlayer].moves.indexOf(move)]
+  );
+  gameState[index] = move;
+  playerMoves[currentPlayer][move]--;
+  updatePieceCount();
+  btnClickCount++;
+  checkWinner();
+  if (gameEnded) return;
+
+  turnO = !turnO;
+  timer.start();
+  updateSelectedPiece();
+  displayTurn(currentPlayer === "O" ? "X's Turn" : "O's Turn");
+};
+
+const canPlaceMove = (box, move) => {
+  if (!box.innerText) return true;
+  let currentMove = box.innerText;
+  let currentPlayer = currentMove.charAt(0);
+  let currentMoveSize = moveSets[currentPlayer].moves.indexOf(currentMove);
+  let newMoveSize = moveSets[move.charAt(0)].moves.indexOf(move);
+  return newMoveSize > currentMoveSize;
+};
+
+const displayTurn = (content) => {
+  setTimeout(() => {
+    turn.innerText = content;
+    turn.style.display = "block";
+    setTimeout(() => {
+      turn.style.display = "none";
+    }, 600);
+  }, 200);
 };
 
 const restartGame = () => {
@@ -87,7 +197,19 @@ const restartGame = () => {
   btnClickCount = 0;
   enableBoxes();
   gameState.fill("");
+  playerMoves = {
+    X: { X1: 3, X2: 2, X3: 1 },
+    O: { O1: 3, O2: 2, O3: 1 },
+  };
+  selectedMove = {
+    X: "X1",
+    O: "O1",
+  };
   msgContainer.classList.add("hide");
+  updatePieceCount();
+  updateSelectedPiece();
+  displayTurn("O's Turn");
+  gameEnded = false;
 };
 
 const disableBoxes = () => {
@@ -101,6 +223,7 @@ const enableBoxes = () => {
   for (box of boxes) {
     box.disabled = false;
     box.innerText = "";
+    box.classList.remove("small", "medium", "large");
   }
 };
 
@@ -108,12 +231,14 @@ const showWinner = (winner) => {
   msg.innerText = winner;
   msgContainer.classList.remove("hide");
   disableBoxes();
+  gameEnded = true;
 };
 
 const showDraw = () => {
-  msg.innerText = "It's a Draw!";
+  msg.innerText = "End of the moves. It's a Draw!";
   msgContainer.classList.remove("hide");
   disableBoxes();
+  gameEnded = true;
 };
 
 const checkWinner = () => {
@@ -125,15 +250,17 @@ const checkWinner = () => {
       gameState[pos3Val] !== ""
     ) {
       if (
-        gameState[pos1Val] === gameState[pos2Val] &&
-        gameState[pos2Val] === gameState[pos3Val]
+        gameState[pos1Val].charAt(0) === gameState[pos2Val].charAt(0) &&
+        gameState[pos2Val].charAt(0) === gameState[pos3Val].charAt(0)
       ) {
-        showWinner(`Congratulations! Winner is ${gameState[pos1Val]}`);
+        showWinner(
+          `Congratulations! Winner is ${gameState[pos1Val].charAt(0)}`
+        );
         return;
       }
     }
   }
-  if (btnClickCount === 9) {
+  if (btnClickCount === 12) {
     showDraw();
   }
 };
@@ -153,4 +280,10 @@ module.exports = {
   checkWinner,
   startGame,
   timer,
+  canPlaceMove,
+  updatePieceCount,
+  updateSelectedPiece,
+  displayTurn,
+  placeMove,
+  gameEnded,
 };
