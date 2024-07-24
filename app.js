@@ -98,7 +98,27 @@ const startGame = () => {
   timer.start();
   updateSelectedPiece();
   displayTurn(turnO ? "O's Turn" : "X's Turn");
+
   boxes.forEach((box, index) => {
+    box.addEventListener("dragover", (e) => {
+      e.preventDefault();
+    });
+
+    box.addEventListener("drop", (e) => {
+      e.preventDefault();
+      let currentPlayer = turnO ? "O" : "X";
+      let move = e.dataTransfer.getData("text");
+      if (
+        move &&
+        playerMoves[currentPlayer][move] > 0 &&
+        canPlaceMove(box, move)
+      ) {
+        placeMove(box, index, currentPlayer, move);
+      } else {
+        displayTurn("Invalid Move");
+      }
+    });
+
     box.addEventListener("click", () => {
       let currentPlayer = turnO ? "O" : "X";
       let move = selectedMove[currentPlayer];
@@ -107,35 +127,47 @@ const startGame = () => {
         playerMoves[currentPlayer][move] > 0 &&
         canPlaceMove(box, move)
       ) {
-        box.innerText = move;
-        box.classList.add(
-          moveSets[currentPlayer].sizes[
-            moveSets[currentPlayer].moves.indexOf(move)
-          ]
-        );
-        gameState[index] = move;
-        playerMoves[currentPlayer][move]--;
-        updatePieceCount();
-        turnO = !turnO;
-        btnClickCount++;
-        checkWinner();
-        if (msgContainer.classList.contains("hide")) {
-          timer.start();
-        }
-        updateSelectedPiece();
-        displayTurn(currentPlayer === "O" ? "X's Turn" : "O's Turn");
+        placeMove(box, index, currentPlayer, move);
       } else {
         displayTurn("Invalid Move");
       }
     });
   });
+
   playerPieces.forEach((piece) => {
+    piece.setAttribute("draggable", true);
+
+    piece.addEventListener("dragstart", (e) => {
+      let player = piece.parentElement.id.includes("x") ? "X" : "O";
+      selectedMove[player] = piece.getAttribute("value");
+      updateSelectedPiece();
+      e.dataTransfer.setData("text", selectedMove[player]);
+    });
+
     piece.addEventListener("click", () => {
       let player = piece.parentElement.id.includes("x") ? "X" : "O";
       selectedMove[player] = piece.getAttribute("value");
       updateSelectedPiece();
     });
   });
+};
+
+const placeMove = (box, index, currentPlayer, move) => {
+  box.innerText = move;
+  box.classList.add(
+    moveSets[currentPlayer].sizes[moveSets[currentPlayer].moves.indexOf(move)]
+  );
+  gameState[index] = move;
+  playerMoves[currentPlayer][move]--;
+  updatePieceCount();
+  turnO = !turnO;
+  btnClickCount++;
+  checkWinner();
+  if (msgContainer.classList.contains("hide")) {
+    timer.start();
+  }
+  updateSelectedPiece();
+  displayTurn(currentPlayer === "O" ? "X's Turn" : "O's Turn");
 };
 
 const canPlaceMove = (box, move) => {
@@ -148,11 +180,13 @@ const canPlaceMove = (box, move) => {
 };
 
 const displayTurn = (content) => {
-  turn.innerText = content;
-  turn.style.display = "block";
   setTimeout(() => {
-    turn.style.display = "none";
-  }, 600);
+    turn.innerText = content;
+    turn.style.display = "block";
+    setTimeout(() => {
+      turn.style.display = "none";
+    }, 600);
+  }, 200);
 };
 
 const restartGame = () => {
